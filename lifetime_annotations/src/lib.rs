@@ -1,3 +1,21 @@
+trait Delimeter {
+    fn find_next(&self, s: &str) -> Option<(usize, usize)>;
+}
+
+impl Delimeter for &str {
+    fn find_next(&self, s: &str) -> Option<(usize, usize)> {
+        s.find(self)
+            .map(|delim_start| (delim_start, delim_start + self.len()))
+    }
+}
+
+impl Delimeter for char {
+    fn find_next(&self, s: &str) -> Option<(usize, usize)> {
+        s.find(*self)
+            .map(|delim_start| (delim_start, delim_start + 1))
+    }
+}
+
 #[derive(Default)]
 struct Splitter<'haystack, D> {
     haystack: Option<&'haystack str>,
@@ -31,24 +49,6 @@ where
     }
 }
 
-trait Delimeter {
-    fn find_next(&self, s: &str) -> Option<(usize, usize)>;
-}
-
-impl Delimeter for &str {
-    fn find_next(&self, s: &str) -> Option<(usize, usize)> {
-        s.find(self)
-            .map(|delim_start| (delim_start, delim_start + self.len()))
-    }
-}
-
-impl Delimeter for char {
-    fn find_next(&self, s: &str) -> Option<(usize, usize)> {
-        s.find(*self)
-            .map(|delim_start| (delim_start, delim_start + 1))
-    }
-}
-
 fn until_char<D>(s: &str, c: D) -> &str
 where
     D: Delimeter,
@@ -64,9 +64,10 @@ mod tests {
     fn splitter_test() {
         let mut splitter = Splitter::new("hi there", "e");
 
-        for i in splitter {
-            println!("{}", i);
-        }
+        assert_eq!(splitter.next(), Some("hi th"));
+        assert_eq!(splitter.next(), Some("r"));
+        assert_eq!(splitter.next(), Some(""));
+        assert_eq!(splitter.next(), None);
     }
 
     #[test]
